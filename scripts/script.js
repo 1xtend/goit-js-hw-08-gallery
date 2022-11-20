@@ -1,5 +1,7 @@
 import images from './images.js';
 
+// * Variables
+
 const gallery = document.querySelector('.js-gallery');
 const modal = document.querySelector('.js-lightbox');
 const modalImage = modal.querySelector('.lightbox__image');
@@ -11,7 +13,7 @@ let activeIndex = -1;
 
 // * Create and Add elems
 
-function createGalleryElem(preview, original, description) {
+function createGalleryElem(preview, original, description, index) {
   const finalHtml = `
   <li class="gallery__item">
     <a
@@ -22,6 +24,7 @@ function createGalleryElem(preview, original, description) {
         class="gallery__image"
         src="${preview}"
         data-source="${original}"
+        data-index="${index}"
         alt="${description}"
       />
     </a>
@@ -33,8 +36,8 @@ function createGalleryElem(preview, original, description) {
 
 function renderImages() {
   let finalImages = '';
-  images.forEach((image) => {
-    const imageHtml = createGalleryElem(image.preview, image.original, image.description);
+  images.forEach((image, i) => {
+    const imageHtml = createGalleryElem(image.preview, image.original, image.description, i);
 
     finalImages += imageHtml;
   });
@@ -46,12 +49,13 @@ renderImages();
 
 // * Open Modal
 
-function openModal(originalUrl, description) {
+function openModal(originalUrl, description, index) {
   modal.classList.add('is-open');
   modalImage.src = originalUrl;
   modalImage.alt = description;
 
   isModalOpen = true;
+  activeIndex = index;
 }
 
 gallery.addEventListener('click', (e) => {
@@ -60,7 +64,9 @@ gallery.addEventListener('click', (e) => {
   if (e.target.classList.contains('gallery__image')) {
     const originalUrl = e.target.dataset.source;
     const description = e.target.alt;
-    openModal(originalUrl, description);
+    const index = +e.target.dataset.index;
+
+    openModal(originalUrl, description, index);
   }
 });
 
@@ -85,11 +91,23 @@ modalOverlay.addEventListener('click', () => {
 // * Slider
 
 function prev() {
-  console.log('prev');
+  if (activeIndex === 0) {
+    return;
+  }
+
+  const targetIndex = activeIndex - 1;
+  const targetImage = images[targetIndex];
+  openModal(targetImage.original, targetImage.description, targetIndex);
 }
 
 function next() {
-  console.log('next');
+  if (activeIndex === images.length - 1) {
+    return;
+  }
+
+  const targetIndex = activeIndex + 1;
+  const targetImage = images[targetIndex];
+  openModal(targetImage.original, targetImage.description, targetIndex);
 }
 
 window.addEventListener('keydown', (e) => {
